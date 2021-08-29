@@ -13,7 +13,9 @@ constexpr float DARK_TIME = 1600;
 constexpr float SEPERATION_TIME = 4000;
 constexpr float TIME_ERROR_ALLOWED = 200;
 
-const char FAULT_CODE_LOOKUP_TABLE[MAX_NUMBER_OF_CODES][40] PROGMEM = {
+constexpr int MAX_LENGTH_OF_STRING = 40;
+
+const char FAULT_CODE_LOOKUP_TABLE[MAX_NUMBER_OF_CODES][MAX_LENGTH_OF_STRING] PROGMEM = {
 "0",
 "1 Ignition pulse",
 "2 Ne signal",
@@ -119,8 +121,11 @@ void UpdateDisplay() {
     LCD_ProductInfo();
   }
   else { //begin program display
-    if(number_of_codes_present == 0){ //start looking for codes
+    if(number_of_codes_present == 0 && millis() < 20000){ //start looking for codes
       LCD_ScanningCodes();
+    }
+    else if (number_of_codes_present == 0 && millis() > 20000) { //give up looking for codes
+      LCD_NoCodesFound();
     }
   }
 }
