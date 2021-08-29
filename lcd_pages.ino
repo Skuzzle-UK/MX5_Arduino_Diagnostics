@@ -78,3 +78,10 @@ void LCD_NoCodesFound(){
     lcdpage = no_codes_found;
   }
 }
+
+void LCD_CodesPresent() {
+  //@TODO code this to show that codes are present
+  //Top row show which code is showing of how many present. i.e. code 2 of 7:
+  //Row 2 show scrolling code number and description from string array.
+  //Scroll code twice before moving on to next code in sequence.
+}

@@ -127,5 +127,8 @@ void UpdateDisplay() {
     else if (number_of_codes_present == 0 && millis() > 20000) { //give up looking for codes
       LCD_NoCodesFound();
     }
+    else if (number_of_codes_present > 0) {
+      LCD_CodesPresent();
+    }
   }
 }
