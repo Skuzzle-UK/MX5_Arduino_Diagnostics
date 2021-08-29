@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 
 // initialize LCD interface pin with the arduino pin number it is connected to.
-constexpr int RS = 12, EN = 11, D4 = 4, D5 = 5, D6 = 6, D7 = 7;
+constexpr int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
 constexpr unsigned int FLASHPIN = 8;
@@ -64,7 +64,6 @@ void setup() {
   pinMode(FLASHPIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(FLASHPIN), FlashPin_Interrupt, CHANGE);
   lcd.begin(16,2);
-  lcd.print("hello");
 }
 
 void loop() {
@@ -116,4 +115,12 @@ void RebuildFaultArray() {
 // updates LCD display to show desired information.
 void UpdateDisplay() {
   //@TODO
+  if (millis() < 5000) { //boot up display and show product info
+    LCD_ProductInfo();
+  }
+  else { //begin program display
+    if(number_of_codes_present == 0){ //start looking for codes
+      LCD_ScanningCodes();
+    }
+  }
 }
