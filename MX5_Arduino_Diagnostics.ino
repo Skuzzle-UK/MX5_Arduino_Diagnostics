@@ -128,7 +128,7 @@ void UpdateDisplay() {
       LCD_NoCodesFound();
     }
     else if (number_of_codes_present > 0) {
-      LCD_CodesPresent();
+      LCD_CodesFound();
     }
   }
 }

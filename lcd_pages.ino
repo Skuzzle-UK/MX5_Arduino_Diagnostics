@@ -2,7 +2,8 @@ enum LcdPages {
   none,
   product_info,
   scanning_codes,
-  no_codes_found
+  no_codes_found,
+  codes_found
 };
 
 LcdPages lcdpage = none;
@@ -79,9 +80,17 @@ void LCD_NoCodesFound(){
   }
 }
 
-void LCD_CodesPresent() {
+void LCD_CodesFound() {
   //@TODO code this to show that codes are present
   //Top row show which code is showing of how many present. i.e. code 2 of 7:
   //Row 2 show scrolling code number and description from string array.
   //Scroll code twice before moving on to next code in sequence.
+  if(lcdpage != codes_found) {
+    lcd.clear();
+    lcdpage = codes_found;
+  }
+  lcd.setCursor(0,0);
+  lcd.print("code 1/");
+  lcd.print(number_of_codes_present);
+  lcd.print(":      ");
 }
