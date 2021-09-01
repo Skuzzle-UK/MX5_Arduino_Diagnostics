@@ -55,37 +55,31 @@ const char FAULT_CODE_LOOKUP_TABLE[MAX_NUMBER_OF_CODES][MAX_LENGTH_OF_STRING] PR
 "36 Idle speed control valve"
 };
 
-unsigned long last_millis = 0;
-unsigned long new_millis = 0;
-unsigned int current_code = 0;
-unsigned int number_of_codes_present = 0;
-unsigned int fault_array[MAX_NUMBER_OF_CODES];
-bool codes_present[MAX_NUMBER_OF_CODES];
-
 void setup() {
   pinMode(FLASHPIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(FLASHPIN), FlashPin_Interrupt, CHANGE);
   lcd.begin(16,2);
 }
 
-void loop() {
+void loop() { //@TODO decide whether this is pointless and should move UpdateDisplay() method into loop
   UpdateDisplay();
 }
 
-void FlashPin_Interrupt() {
-  //Runs when the state of the pin changes
+unsigned long last_millis = 0;
+unsigned long new_millis = 0;
+void FlashPin_Interrupt() { //runs when the state of the pin changes
   new_millis = millis();
   New_Flash_State(digitalRead(FLASHPIN), new_millis - last_millis);
   last_millis = new_millis;
 }
 
-// registers what changed state of input pin means 
-void New_Flash_State(bool state, float state_time){
+unsigned int current_code = 0;
+bool codes_present[MAX_NUMBER_OF_CODES];
+void New_Flash_State(bool state, float state_time){ //registers what changed state of input pin means
   //check for reverse condition as we are looking at the condition after the counted state_time.
   //i.e. when light goes dark we are now looking at the length of time it was light.
   if (state == true){ //code for dark state
-    if (fabsf(SEPERATION_TIME - state_time) < TIME_ERROR_ALLOWED){
-      //logs fault code and prepares for new one. No point logging or rebuilding fault array if code already confirmed as present.
+    if (fabsf(SEPERATION_TIME - state_time) < TIME_ERROR_ALLOWED){ //logs fault code and prepares for new one. No point logging or rebuilding fault array if code already confirmed as present.
       if (!codes_present[current_code]) {
         codes_present[current_code] = true;
         RebuildFaultArray();
@@ -97,14 +91,15 @@ void New_Flash_State(bool state, float state_time){
     if (fabsf(LONG_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Long flash
       current_code += 10;
     }
-    else if (fabsf(SHORT_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Long flash
+    else if (fabsf(SHORT_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Short flash
       current_code += 1;
     }
   }
 }
 
-// rebuilds an array of the current faults by iterating through the codes_present array looking for true.
-void RebuildFaultArray() {
+unsigned int number_of_codes_present = 0;
+unsigned int fault_array[MAX_NUMBER_OF_CODES];
+void RebuildFaultArray() { //rebuilds an array of the current faults by iterating through the codes_present array looking for true.
   number_of_codes_present = 0;
   for (int i = 0; i < MAX_NUMBER_OF_CODES; i++) {
     if (codes_present[i]){
@@ -114,9 +109,7 @@ void RebuildFaultArray() {
   }
 }
 
-// updates LCD display to show desired information.
-void UpdateDisplay() {
-  //@TODO
+void UpdateDisplay() { //updates LCD display to show desired information.
   if (millis() < 5000) { //boot up display and show product info
     LCD_ProductInfo();
   }
@@ -127,7 +120,7 @@ void UpdateDisplay() {
     else if (number_of_codes_present == 0 && millis() > 20000) { //give up looking for codes
       LCD_NoCodesFound();
     }
-    else if (number_of_codes_present > 0) {
+    else if (number_of_codes_present > 0) { //display found codes
       LCD_CodesFound();
     }
   }

@@ -20,7 +20,7 @@ void LCD_ProductInfo() {
   }
 }
 
-
+constexpr float LOADING_DELAY = 100;
 constexpr int LCD_SCAN_ARRAY_SIZE = 19;
 const char lcd_scan_array[LCD_SCAN_ARRAY_SIZE][MAX_LENGTH_OF_STRING] PROGMEM = {
   "#               ",
@@ -46,9 +46,6 @@ const char lcd_scan_array[LCD_SCAN_ARRAY_SIZE][MAX_LENGTH_OF_STRING] PROGMEM = {
 
 int lcd_scan_position = 0;
 float lcd_scan_change_millis = 0;
-
-constexpr float LOADING_DELAY = 100;
-
 void LCD_ScanningCodes() {
   if(lcdpage != scanning_codes) {
     lcd.clear();
@@ -80,17 +77,54 @@ void LCD_NoCodesFound(){
   }
 }
 
+constexpr float SCROLL_CHARACTER_DELAY = 200;
+
+float character_display_timer = 0;
+int displayed_code = 0;
+int displayed_character = 0;
+bool end_scroll_flag = false;
+char code_string[MAX_LENGTH_OF_STRING];
+char code_display_string[16] = {"                "};
+
 void LCD_CodesFound() {
-  //@TODO code this to show that codes are present
-  //Top row show which code is showing of how many present. i.e. code 2 of 7:
-  //Row 2 show scrolling code number and description from string array.
-  //Scroll code twice before moving on to next code in sequence.
   if(lcdpage != codes_found) {
     lcd.clear();
     lcdpage = codes_found;
   }
+
+  if (displayed_code == 0) { //First loop through to set the start time of the loop
+    DisplayCode(displayed_code + 1);
+  }
+
+  if (end_scroll_flag) { //Advance to next present code
+    DisplayCode(displayed_code + 1);
+  }
+
+  if (displayed_code > number_of_codes_present) { //Restart loop if showing last code
+    DisplayCode(1);
+  }
+  
   lcd.setCursor(0,0);
-  lcd.print("code 1/");
-  lcd.print(number_of_codes_present);
-  lcd.print(":      ");
+  lcd.print("code "); lcd.print(displayed_code); lcd.print("/"); lcd.print(number_of_codes_present); lcd.print(":      ");
+
+  if (millis() - character_display_timer > SCROLL_CHARACTER_DELAY) {
+    //@TODO advance code_display_string to show code_string[] constantly scrolling
+  }
+  
+  lcd.setCursor(0,1);
+  lcd.print(code_display_string);
+}
+
+void DisplayCode(int i) { //Changes the displayed code for the codes_found page
+  character_display_timer = millis();
+  displayed_code = i;
+  displayed_character = 0;
+  GetCodeString(i);
+}
+
+void GetCodeString(int i) { //gets full string of the current code to be displayed
+  int faultcode = fault_array[i];
+  for (int j = 0; j < MAX_LENGTH_OF_STRING; j++) {
+    code_string[j] = FAULT_CODE_LOOKUP_TABLE[faultcode][j];
+  }
 }
