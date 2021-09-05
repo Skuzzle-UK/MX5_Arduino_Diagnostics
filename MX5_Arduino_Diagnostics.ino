@@ -56,7 +56,8 @@ const char FAULT_CODE_LOOKUP_TABLE[MAX_NUMBER_OF_CODES][MAX_LENGTH_OF_STRING] PR
 };
 
 void setup() {
-  pinMode(FLASHPIN, INPUT);
+  Serial.begin(9600);
+  pinMode(FLASHPIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(FLASHPIN), FlashPin_Interrupt, CHANGE);
   lcd.begin(16,2);
 }
