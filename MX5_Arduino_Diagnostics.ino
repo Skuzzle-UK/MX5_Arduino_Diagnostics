@@ -90,10 +90,13 @@ void New_Flash_State(bool state, float state_time){ //registers what changed sta
   else if (state == false){ //code for illuminated state
     if (fabsf(LONG_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Long flash
       current_code += 10;
+      Serial.print("Long flash");
     }
     else if (fabsf(SHORT_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Short flash
       current_code += 1;
+      Serial.print("Short flash");
     }
+    Serial.print(current_code);
   }
 }
 

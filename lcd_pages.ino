@@ -107,12 +107,22 @@ void LCD_CodesFound() {
   lcd.setCursor(0,0);
   lcd.print("code "); lcd.print(displayed_code); lcd.print("/"); lcd.print(number_of_codes_present); lcd.print(":      ");
 
+//@TODO TEST THIS OUT!
   if (millis() - character_display_timer > SCROLL_CHARACTER_DELAY) {
-    //@TODO advance code_display_string to show code_string[] constantly scrolling
+    //advances code_display_string to show code_string[] constantly scrolling
+    if (displayed_character > MAX_LENGTH_OF_STRING - 16) { //reset scroll to first character
+      displayed_character = 0;
+    }
+    else {
+      for (int i = 0; i < 16; i++) {
+        code_display_string[i] = code_string[displayed_character + i];
+      }
+    }
   }
   
   lcd.setCursor(0,1);
   lcd.print(code_display_string);
+  displayed_character++;
 }
 
 void DisplayCode(int i) { //Changes the displayed code for the codes_found page
@@ -120,11 +130,14 @@ void DisplayCode(int i) { //Changes the displayed code for the codes_found page
   displayed_code = i;
   displayed_character = 0;
   GetCodeString(i);
+  for (int k = 0; k < 16; k++) {
+    code_display_string[k] = code_string[k];
+  }
 }
 
 void GetCodeString(int i) { //gets full string of the current code to be displayed
   int faultcode = fault_array[i];
   for (int j = 0; j < MAX_LENGTH_OF_STRING; j++) {
-    code_string[j] = FAULT_CODE_LOOKUP_TABLE[faultcode][j];
+    code_string[j] = (char)pgm_read_word(&(FAULT_CODE_LOOKUP_TABLE[faultcode][j]));
   }
 }
