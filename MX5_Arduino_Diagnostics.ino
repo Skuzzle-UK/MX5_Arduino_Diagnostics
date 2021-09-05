@@ -4,7 +4,7 @@
 constexpr int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
-constexpr unsigned int FLASHPIN = 8;
+constexpr unsigned int FLASHPIN = 21;
 constexpr int MAX_NUMBER_OF_CODES = 37;
 constexpr float INITIALIZE_TIME = 5000;
 constexpr float LONG_FLASH_TIME = 1000;
@@ -62,54 +62,67 @@ void setup() {
   lcd.begin(16,2);
 }
 
-void loop() { //@TODO decide whether this is pointless and should move UpdateDisplay() method into loop
+bool dark_state = false;
+float time_went_dark = 0;
+void loop() {
   UpdateDisplay();
-}
-
-unsigned long last_millis = 0;
-unsigned long new_millis = 0;
-void FlashPin_Interrupt() { //runs when the state of the pin changes
-  new_millis = millis();
-  New_Flash_State(digitalRead(FLASHPIN), new_millis - last_millis);
-  last_millis = new_millis;
-  Serial.print("change");
-}
-
-unsigned int current_code = 0;
-bool codes_present[MAX_NUMBER_OF_CODES];
-void New_Flash_State(bool state, float state_time){ //registers what changed state of input pin means
-  //check for reverse condition as we are looking at the condition after the counted state_time.
-  //i.e. when light goes dark we are now looking at the length of time it was light.
-  if (state == true){ //code for dark state
-    if (fabsf(SEPERATION_TIME - state_time) < TIME_ERROR_ALLOWED){ //logs fault code and prepares for new one. No point logging or rebuilding fault array if code already confirmed as present.
-      if (!codes_present[current_code]) {
-        codes_present[current_code] = true;
-        RebuildFaultArray();
-      }
-      current_code = 0;
+  if(dark_state) {
+    if(millis() - time_went_dark > DARK_TIME) {
+      LogCode();
     }
-  }
-  else if (state == false){ //code for illuminated state
-    if (fabsf(LONG_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Long flash
-      current_code += 10;
-      Serial.print("Long flash");
-    }
-    else if (fabsf(SHORT_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Short flash
-      current_code += 1;
-      Serial.print("Short flash");
-    }
-    Serial.print(current_code);
   }
 }
 
 unsigned int number_of_codes_present = 0;
 unsigned int fault_array[MAX_NUMBER_OF_CODES];
+unsigned int current_code = 0;
+bool codes_present[MAX_NUMBER_OF_CODES];
+void LogCode(){
+  if (!codes_present[current_code]) {
+    codes_present[current_code] = true;
+    RebuildFaultArray();
+  }
+  current_code = 0;
+}
+
+unsigned long last_millis = 0;
+unsigned long new_millis = 0;
+static void FlashPin_Interrupt() { //runs when the state of the pin changes
+  new_millis = millis();
+  New_Flash_State(digitalRead(FLASHPIN), new_millis - last_millis);
+  last_millis = new_millis;
+  Serial.print("Current code: ");
+  Serial.print(current_code);
+  Serial.print("\n");
+}
+
+
+static void New_Flash_State(bool state, float state_time){ //registers what changed state of input pin means
+  //check for reverse condition as we are looking at the condition after the counted state_time.
+  //i.e. when light goes dark we are now looking at the length of time it was light.
+  if (state == true){ //code for dark state
+    dark_state = true;
+    time_went_dark = millis();
+  }
+  else if (state == false){ //code for illuminated state
+    dark_state = false;
+    time_went_dark = millis();
+    if (fabsf(LONG_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Long flash
+      current_code += 10;
+    }
+    else if (fabsf(SHORT_FLASH_TIME - state_time) < TIME_ERROR_ALLOWED){ //Short flash
+      current_code += 1;
+    }
+  }
+}
+
+
 void RebuildFaultArray() { //rebuilds an array of the current faults by iterating through the codes_present array looking for true.
   number_of_codes_present = 0;
   for (int i = 0; i < MAX_NUMBER_OF_CODES; i++) {
-    if (codes_present[i]){
-      number_of_codes_present++;
+    if (codes_present[i] == true){
       fault_array[number_of_codes_present] = i;
+      number_of_codes_present++;
     }
   }
 }
