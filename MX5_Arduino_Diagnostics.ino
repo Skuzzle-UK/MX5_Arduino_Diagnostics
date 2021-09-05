@@ -71,6 +71,7 @@ void FlashPin_Interrupt() { //runs when the state of the pin changes
   new_millis = millis();
   New_Flash_State(digitalRead(FLASHPIN), new_millis - last_millis);
   last_millis = new_millis;
+  Serial.print("change");
 }
 
 unsigned int current_code = 0;
