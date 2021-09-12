@@ -85,6 +85,7 @@ int displayed_character = 0;
 bool end_scroll_flag = false;
 char code_string[MAX_LENGTH_OF_STRING];
 char code_display_string[16] = {"                "};
+bool first_loop = true;
 
 void LCD_CodesFound() {
   if(lcdpage != codes_found) {
@@ -92,29 +93,35 @@ void LCD_CodesFound() {
     lcdpage = codes_found;
   }
 
-  if (displayed_code == 0) { //First loop through to set the start time of the loop
-    DisplayCode(displayed_code + 1);
+  if (first_loop) { //First loop through to set the start time of the loop
+    DisplayCode(displayed_code);
+    Serial.print("First time through loop");
+    first_loop = false;
   }
 
   if (end_scroll_flag) { //Advance to next present code
-    DisplayCode(displayed_code + 1);
+    DisplayCode(displayed_code);
+    Serial.print("Next code");
   }
 
-  if (displayed_code > number_of_codes_present) { //Restart loop if showing last code
-    DisplayCode(1);
+  if (displayed_code - 1 > number_of_codes_present) { //Restart loop if showing last code
+    DisplayCode(0);
+    Serial.print("Restart loop");
   }
   
   lcd.setCursor(0,0);
-  lcd.print("code "); lcd.print(displayed_code); lcd.print("/"); lcd.print(number_of_codes_present - 1); lcd.print(":      ");
+  lcd.print("code "); lcd.print(displayed_code + 1); lcd.print("/"); lcd.print(number_of_codes_present - 1); lcd.print(":      ");
 
   if (millis() - character_display_timer > SCROLL_CHARACTER_DELAY) {
     //advances code_display_string to show code_string[] constantly scrolling
     if (displayed_character > MAX_LENGTH_OF_STRING - 16) { //reset scroll to first character
       displayed_character = 0;
+      Serial.print("Move loop");
     }
     else {
       for (int i = 0; i < 16; i++) {
         code_display_string[i] = code_string[displayed_character + i];
+        Serial.print("Restart loop");
       }
     }
   }
