@@ -13,46 +13,46 @@ constexpr float DARK_TIME = 1600;
 constexpr float SEPERATION_TIME = 4000;
 constexpr float TIME_ERROR_ALLOWED = 200;
 
-constexpr int MAX_LENGTH_OF_STRING = 40;
+constexpr int MAX_LENGTH_OF_STRING = 45;
 
 const char FAULT_CODE_LOOKUP_TABLE[MAX_NUMBER_OF_CODES][MAX_LENGTH_OF_STRING] PROGMEM = {
-"0",
-"1 Ignition pulse",
-"2 Ne signal",
-"3 G signal",
-"4 SGT signal (1.8L)",
-"5",
-"6",
-"7",
-"8 Airflow meter",
-"9 Water thermistor",
-"10 Intake air thermistor in airflow meter",
-"11",
-"12 Throttle position sensor",
-"13",
-"14 Atmospheric pressure sensor",
-"15 Oxygen sensor(output too low)",
-"16 EGR function sensor (1.8L)",
-"17 Oxygen sensor(output not changing)",
-"18",
-"19",
-"20",
-"21",
-"22",
-"23",
-"24",
-"25 PRC solenoid valve (1.8L)",
+"0                                            ",
+"1 Ignition pulse      1 Ignition pulse       ",
+"2 Ne signal     2 Ne signal      2 Ne signal ",
+"3 G signal    3 G signal    3 G signal       ",
+"4 SGT signal (1.8L)     4 SGT signal (1.8L)  ",
+"5                                            ",
+"6                                            ",
+"7                                            ",
+"8 Airflow meter          8 Airflow meter     ",
+"9 Water thermistor      9 Water thermistor   ",
+"10 Intake air thermistor in airflow meter    ",
+"11                                           ",
+"12 Throttle position sensor                  ",
+"13                                           ",
+"14 Atmospheric pressure sensor               ",
+"15 Oxygen sensor(output too low)             ",
+"16 EGR function sensor (1.8L)                ",
+"17 Oxygen sensor(output not changing)        ",
+"18                                           ",
+"19                                           ",
+"20                                           ",
+"21                                           ",
+"22                                           ",
+"23                                           ",
+"24                                           ",
+"25 PRC solenoid valve (1.8L)                 ",
 "26 Solenoid valve(Evaporative canister purge)",
-"27 EGR solenoid valve(vacuum) (1.8L)",
-"28 EGR solenoid valve(vent) (1.8L)",
-"29",
-"30",
-"31",
-"32",
-"33",
-"34 Idle air control (1.8L)",
-"35",
-"36 Idle speed control valve"
+"27 EGR solenoid valve(vacuum) (1.8L)         ",
+"28 EGR solenoid valve(vent) (1.8L)           ",
+"29                                           ",
+"30                                           ",
+"31                                           ",
+"32                                           ",
+"33                                           ",
+"34 Idle air control     34 Idle air control  ",
+"35                                           ",
+"36 Idle speed control valve                  "
 };
 
 void setup() {
@@ -73,8 +73,8 @@ void loop() {
   }
 }
 
-unsigned int number_of_codes_present = 0;
-unsigned int fault_array[MAX_NUMBER_OF_CODES];
+unsigned int number_of_codes_present = 0; //Always shows 1 more than is actually true
+unsigned int fault_array[MAX_NUMBER_OF_CODES]; //fault_array[0] is always true and null
 unsigned int current_code = 0;
 bool codes_present[MAX_NUMBER_OF_CODES];
 void LogCode(){
@@ -91,7 +91,7 @@ static void FlashPin_Interrupt() { //runs when the state of the pin changes
   new_millis = millis();
   New_Flash_State(digitalRead(FLASHPIN), new_millis - last_millis);
   last_millis = new_millis;
-  Serial.print("Current code: ");
+  Serial.print("Current code: "); //Left in code so that you can watch the code count up in serial monitor
   Serial.print(current_code);
   Serial.print("\n");
 }
@@ -128,6 +128,7 @@ void RebuildFaultArray() { //rebuilds an array of the current faults by iteratin
 }
 
 void UpdateDisplay() { //updates LCD display to show desired information.
+  codes_present[0] = true;
   if (millis() < 5000) { //boot up display and show product info
     LCD_ProductInfo();
   }
