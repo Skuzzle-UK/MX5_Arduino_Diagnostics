@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 
 // initialize LCD interface pin with the arduino pin number it is connected to.
-constexpr int RS = 12, EN = 11, D4 = 5, D5 = 4, D6 = 3, D7 = 2;
+constexpr int RS = 12, EN = 11, D4 = 2, D5 = 3, D6 = 4, D7 = 5;
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 
 constexpr unsigned int FLASHPIN = 21;
